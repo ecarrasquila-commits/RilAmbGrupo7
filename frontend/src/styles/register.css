@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; font-family: 'Inter', system-ui, sans-serif; background: #F0F0F4; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+.wrap { min-height: 100vh; width: 100%; display: flex; align-items: center; justify-content: center; padding: 32px 24px; position: relative; background: #F0F0F4; overflow: hidden; }
+.bg-pattern { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.card { width: 100%; max-width: 650px; background: rgba(255,255,255,0.82); border: 0.5px solid rgba(0,8,44,0.07); border-radius: 22px; padding: 48px 48px 44px; backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px); box-shadow: 0 1px 1px rgba(0,8,44,0.02), 0 2px 4px rgba(0,8,44,0.03), 0 8px 24px rgba(0,8,44,0.05), 0 32px 64px rgba(0,8,44,0.07); position: relative; z-index: 1; overflow: hidden; }
+.card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent 0%, rgba(0,8,44,0.10) 25%, rgba(0,8,44,0.18) 50%, rgba(0,8,44,0.10) 75%, transparent 100%); }
+.logo { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+.logo-mark { width: 30px; height: 30px; background: #00082C; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.logo-mark img { width: 15px; height: auto; display: block; }
+.logo-name { font-size: 16px; font-weight: 600; color: #00082C; letter-spacing: -0.02em; }
+.header { margin-bottom: 28px; }
+.header h1 { font-size: 22px; font-weight: 500; color: #00082C; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 6px; }
+.header p { font-size: 13.5px; font-weight: 400; color: rgba(0,8,44,0.40); letter-spacing: 0.005em; line-height: 1.5; }
+.fields { display: flex; flex-direction: column; gap: 14px; }
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field { display: flex; flex-direction: column; gap: 7px; }
+.field label { font-size: 11px; font-weight: 500; color: rgba(0,8,44,0.40); letter-spacing: 0.08em; text-transform: uppercase; }
+.input-wrap { position: relative; }
+.field input { width: 100%; height: 46px; background: rgba(0,8,44,0.022); border: 0.5px solid rgba(0,8,44,0.09); border-radius: 11px; padding: 0 44px 0 15px; font-family: 'Inter', system-ui, sans-serif; font-size: 14px; font-weight: 400; color: #00082C; outline: none; transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease; -webkit-appearance: none; }
+.field input.no-icon { padding-right: 15px; }
+.field input::placeholder { color: rgba(0,8,44,0.20); font-weight: 300; }
+.field input:hover { border-color: rgba(0,8,44,0.18); background: rgba(0,8,44,0.030); }
+.field input:focus { border-color: rgba(0,8,44,0.50); background: #fff; box-shadow: 0 0 0 3.5px rgba(0,8,44,0.055), 0 1px 4px rgba(0,8,44,0.06); }
+.field input.error { border-color: rgba(200,30,30,0.45); background: rgba(200,30,30,0.018); }
+.field input.error:focus { box-shadow: 0 0 0 3.5px rgba(200,30,30,0.08); }
+.error-msg { font-size: 11px; color: rgba(180,20,20,0.75); letter-spacing: 0.01em; margin-top: -2px; }
+.eye-btn { position: absolute; right: 13px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 5px; color: rgba(0,8,44,0.24); display: flex; align-items: center; transition: color 0.15s ease, opacity 0.15s ease; border-radius: 6px; }
+.eye-btn:hover { color: rgba(0,8,44,0.60); }
+.strength-bar { display: flex; gap: 4px; margin-top: 8px; }
+.strength-seg { flex: 1; height: 3px; border-radius: 99px; background: rgba(0,8,44,0.08); transition: background 0.3s ease; }
+.strength-seg.s1 { background: #D83030; }
+.strength-seg.s2 { background: #E07020; }
+.strength-seg.s3 { background: #C8A020; }
+.strength-seg.s4 { background: #10A060; }
+.strength-label { font-size: 11px; color: rgba(0,8,44,0.35); margin-top: 5px; letter-spacing: 0.01em; }
+.pwd-reqs { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; }
+.req-item { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: rgba(0,8,44,0.35); transition: color 0.2s; }
+.req-item svg { width: 13px; height: 13px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.4; transition: opacity 0.2s, color 0.2s; }
+.req-item.met { color: #10A060; }
+.req-item.met svg { opacity: 1; }
+.section-sep { display: flex; align-items: center; gap: 10px; margin: 4px 0 2px; }
+.section-sep span { font-size: 10px; font-weight: 500; letter-spacing: 0.10em; text-transform: uppercase; color: rgba(0,8,44,0.25); white-space: nowrap; }
+.section-sep-line { flex: 1; height: 0.5px; background: rgba(0,8,44,0.07); }
+.btn-main { width: 100%; height: 50px; background: #00082C; border: none; border-radius: 11px; color: #F8F8FA; font-family: 'Inter', system-ui, sans-serif; font-size: 14px; font-weight: 500; letter-spacing: 0.015em; cursor: pointer; margin-top: 22px; position: relative; overflow: hidden; transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease; box-shadow: 0 1px 2px rgba(0,8,44,0.08), 0 4px 14px rgba(0,8,44,0.20), inset 0 1px 0 rgba(255,255,255,0.08); }
+.btn-main:hover { background: #0b1c50; box-shadow: 0 2px 4px rgba(0,8,44,0.10), 0 8px 22px rgba(0,8,44,0.26), inset 0 1px 0 rgba(255,255,255,0.08); transform: translateY(-1px); }
+.btn-main:active { transform: translateY(0) scale(0.994); box-shadow: 0 1px 4px rgba(0,8,44,0.12); }
+.footer { margin-top: 26px; text-align: center; font-size: 12.5px; color: rgba(0,8,44,0.30); letter-spacing: 0.005em; }
+.footer a { color: rgba(0,8,44,0.55); font-weight: 500; text-decoration: none; cursor: pointer; border-bottom: 0.5px solid rgba(0,8,44,0.18); padding-bottom: 0.5px; transition: color 0.15s, border-color 0.15s; }
+.footer a:hover { color: #00082C; border-color: rgba(0,8,44,0.45); }
+@media (max-width: 600px) {
+  .wrap { padding: 0; align-items: stretch; min-height: 100dvh; }
+  .card { width: 100%; max-width: 100%; min-height: 100dvh; border-radius: 0; border: none; box-shadow: none; background: rgba(255,255,255,0.88); padding: 48px 24px 36px; display: flex; flex-direction: column; }
+  .card::before { display: none; }
+  .row-2 { grid-template-columns: 1fr; }
+  .footer { margin-top: auto; padding-top: 28px; }
+}
+@media (min-width: 601px) and (max-width: 780px) {
+  .wrap { padding: 24px 16px; }
+  .card { padding: 44px 40px 40px; }
+}

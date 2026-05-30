@@ -2,46 +2,75 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-
-// Recursos
-import logoImg from "../assets/logo.png";
+import { loginUser } from "../services/authService";
 
 // Estilos
 import "../styles/login.css";
 
 // Componentes
 import BgPattern from "../components/auth/bgPattern";
-import { EyeOpen, EyeClosed } from "../components/auth/passwordEye";
+import AuthLogo from "../components/auth/AuthLogo";
+import PasswordField from "../components/auth/PasswordField";
 
-// ======================================================
-// Página de inicio de sesión
-// ======================================================
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Login() {
-  // ======================================================
-  // Estado
-  // ======================================================
-
+  const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState({ correo: "", password: "" });
 
-  // ======================================================
-  // Manejadores de eventos
-  // ======================================================
+  const validateForm = () => {
+    const newErrors = {
+      correo: "",
+      password: "",
+    };
 
-  const handleSubmit = (e) => {
+    if (!correo.trim()) {
+      newErrors.correo = "Ingresa tu correo electrónico";
+    } else if (!emailRegex.test(correo.trim())) {
+      newErrors.correo = "Ingresa un correo válido";
+    }
+
+    if (!password) {
+      newErrors.password = "Ingresa tu contraseña";
+    }
+
+    setErrors(newErrors);
+    return !newErrors.correo && !newErrors.password;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // TODO: Conectar con el backend
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      await loginUser({ correo, password });
+
+      alert("Login exitoso");
+      window.location.href = "/dashboard";
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword((prev) => !prev);
+  const handleCorreoChange = (value) => {
+    setCorreo(value);
+    if (errors.correo) {
+      setErrors((current) => ({ ...current, correo: "" }));
+    }
   };
 
-  // ======================================================
-  // Renderizado
-  // ======================================================
+  const handlePasswordChange = (value) => {
+    setPassword(value);
+    if (errors.password) {
+      setErrors((current) => ({ ...current, password: "" }));
+    }
+  };
+
+  const isFormValid = correo.trim() && emailRegex.test(correo.trim()) && password;
 
   return (
     <>
@@ -53,13 +82,11 @@ export default function Login() {
           {/* ======================================================
               Logo
           ====================================================== */}
-          <div className="login-logo">
-            <div className="login-logo-mark">
-              <img src={logoImg} alt="" />
-            </div>
-
-            <span className="login-logo-name">RilAmb</span>
-          </div>
+          <AuthLogo
+            containerClassName="login-logo"
+            markClassName="login-logo-mark"
+            textClassName="login-logo-name"
+          />
 
           {/* ======================================================
               Encabezado
@@ -88,8 +115,13 @@ export default function Login() {
                   type="email"
                   placeholder="tu@empresa.com"
                   autoComplete="email"
+                  value={correo}
+                  onChange={(e) => handleCorreoChange(e.target.value)}
                 />
               </div>
+              {errors.correo && (
+                <span className="login-error">{errors.correo}</span>
+              )}
             </div>
 
             {/* ------------------------------
@@ -104,37 +136,27 @@ export default function Login() {
                 </Link>
               </div>
 
-              <div className="login-input-wrap">
-                <input
-                  id="password"
-                  className="login-input"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-
-                {/* Mostrar u ocultar contraseña */}
-                <button
-                  type="button"
-                  className={`login-eye-btn${
-                    password.length > 0 ? " visible" : ""
-                  }`}
-                  onClick={togglePasswordVisibility}
-                  aria-label={
-                    showPassword
-                      ? "Ocultar contraseña"
-                      : "Mostrar contraseña"
-                  }
-                >
-                  {showPassword ? <EyeClosed /> : <EyeOpen />}
-                </button>
-              </div>
+              <PasswordField
+                id="password"
+                className="login-input"
+                wrapperClassName="login-input-wrap"
+                buttonClassName="login-eye-btn"
+                placeholder="••••••••"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => handlePasswordChange(e.target.value)}
+              />
+              {errors.password && (
+                <span className="login-error">{errors.password}</span>
+              )}
             </div>
 
             {/* Botón de envío */}
-            <button type="submit" className="login-btn-main">
+            <button
+              type="submit"
+              className="login-btn-main"
+              disabled={!isFormValid}
+            >
               Iniciar sesión
             </button>
           </form>

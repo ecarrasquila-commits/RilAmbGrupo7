@@ -3,15 +3,15 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Recursos
-import logoImg from "../assets/logo.png";
-
 // Estilos
 import "../styles/recoverPassword.css";
 
 // Componentes
 import BgPattern from "../components/auth/bgPattern";
-import { EyeOpen, EyeClosed } from "../components/auth/passwordEye";
+import ProgressDots from "../components/auth/progressDots";
+import PasswordField from "../components/auth/PasswordField";
+import AuthLogo from "../components/auth/AuthLogo";
+
 
 // ======================================================
 // Helpers
@@ -26,16 +26,6 @@ function getStrength(pwd) {
 }
 const STRENGTH_LABELS  = ['', 'Débil', 'Regular', 'Buena', 'Fuerte'];
 const STRENGTH_CLASSES = ['', 's1', 's2', 's3', 's4'];
-
-function ProgressDots({ step }) {
-  return (
-    <div className="rp-progress-dots">
-      <div className={`rp-dot ${step > 1 ? 'done' : step === 1 ? 'active' : ''}`} />
-      <div className={`rp-dot ${step > 2 ? 'done' : step === 2 ? 'active' : ''}`} />
-      <div className={`rp-dot ${step > 3 ? 'done' : step === 3 ? 'active' : ''}`} />
-    </div>
-  );
-}
 
 // ======================================================
 // Iconos SVG
@@ -114,8 +104,6 @@ export default function RecoverPassword() {
   // Pantalla 3 - Nueva contraseña
   const [pwd1, setPwd1] = useState('');
   const [pwd2, setPwd2] = useState('');
-  const [showPwd1, setShowPwd1] = useState(false);
-  const [showPwd2, setShowPwd2] = useState(false);
   const [pwd1Error, setPwd1Error] = useState(false);
   const [pwd2Error, setPwd2Error] = useState(false);
   const [pwdAlert, setPwdAlert] = useState({ show: false, msg: '' });
@@ -165,7 +153,8 @@ export default function RecoverPassword() {
     setOtpErrMsg(false); setCodeAlert({ show: false, msg: '' }); setResendAlert(false);
     setResendCountdown(0); setExpireText('60s'); setExpireExpired(false);
     setResendDisabled(true); setVerifyDisabled(false);
-    setPwd1(''); setPwd2(''); setShowPwd1(false); setShowPwd2(false);
+    setPwd1('');
+    setPwd2('');
     setPwd1Error(false); setPwd2Error(false); setPwdAlert({ show: false, msg: '' });
     setStrengthScore(0); setStrengthVisible(false);
     setReqsMet({ len: false, upper: false, num: false, special: false });
@@ -333,12 +322,11 @@ export default function RecoverPassword() {
         {/* ======================================================
             Logo
         ====================================================== */}
-        <div className="rp-logo">
-          <div className="rp-logo-mark">
-            <img src={logoImg} alt="" />
-          </div>
-          <span className="rp-logo-name">RilAmb</span>
-        </div>
+        <AuthLogo
+          containerClassName="rp-logo"
+          markClassName="rp-logo-mark"
+          textClassName="rp-logo-name"
+        />
 
         {/* ======================================================
             Pantalla 1 - Email
@@ -543,24 +531,15 @@ export default function RecoverPassword() {
               {/* Campo de nueva contraseña */}
               <div className="rp-field">
                 <label>Nueva contraseña</label>
-                <div className="rp-input-wrap">
-                  <input
-                    className={`rp-input rp-input--has-icon${pwd1Error ? ' error' : ''}`}
-                    type={showPwd1 ? 'text' : 'password'}
-                    placeholder="Mínimo 8 caracteres"
-                    autoComplete="new-password"
-                    value={pwd1}
-                    onChange={e => handlePwd1Change(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className={`rp-eye-btn${pwd1.length > 0 ? ' show' : ''}`}
-                    onClick={() => setShowPwd1(p => !p)}
-                    aria-label={showPwd1 ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                  >
-                    {showPwd1 ? <EyeClosed /> : <EyeOpen />}
-                  </button>
-                </div>
+                <PasswordField
+                  className={`rp-input rp-input--has-icon${pwd1Error ? ' error' : ''}`}
+                  wrapperClassName="rp-input-wrap"
+                  buttonClassName="rp-eye-btn"
+                  placeholder="Mínimo 8 caracteres"
+                  autoComplete="new-password"
+                  value={pwd1}
+                  onChange={e => handlePwd1Change(e.target.value)}
+                />
                 {pwd1Error && (
                   <span className="rp-error-msg">Mínimo 8 caracteres</span>
                 )}
@@ -616,26 +595,17 @@ export default function RecoverPassword() {
               {/* Campo de confirmar contraseña */}
               <div className="rp-field">
                 <label>Confirmar contraseña</label>
-                <div className="rp-input-wrap">
-                  <input
-                    className={`rp-input rp-input--has-icon${
-                      pwd2Error ? ' error' : pwd2.length > 0 && pwd1 === pwd2 ? ' valid' : ''
-                    }`}
-                    type={showPwd2 ? 'text' : 'password'}
-                    placeholder="Repite tu contraseña"
-                    autoComplete="new-password"
-                    value={pwd2}
-                    onChange={e => handlePwd2Change(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className={`rp-eye-btn${pwd2.length > 0 ? ' show' : ''}`}
-                    onClick={() => setShowPwd2(p => !p)}
-                    aria-label={showPwd2 ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                  >
-                    {showPwd2 ? <EyeClosed /> : <EyeOpen />}
-                  </button>
-                </div>
+                <PasswordField
+                  className={`rp-input rp-input--has-icon${
+                    pwd2Error ? ' error' : pwd2.length > 0 && pwd1 === pwd2 ? ' valid' : ''
+                  }`}
+                  wrapperClassName="rp-input-wrap"
+                  buttonClassName="rp-eye-btn"
+                  placeholder="Repite tu contraseña"
+                  autoComplete="new-password"
+                  value={pwd2}
+                  onChange={e => handlePwd2Change(e.target.value)}
+                />
                 {pwd2Error && (
                   <span className="rp-error-msg">Las contraseñas no coinciden</span>
                 )}
