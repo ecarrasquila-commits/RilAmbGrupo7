@@ -1,0 +1,71 @@
+RESPUESTA PARA DESPLIEGUE EN COOLIFY
+
+1) frontend/src/services/apiBase.js
+
+Contenido actual:
+
+const DEFAULT_API_URL = "http://127.0.0.1:8000";
+
+export function getApiBaseUrl() {
+  return (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(/\/$/, "");
+}
+
+Esto significa que el frontend toma la variable de entorno `VITE_API_URL`.
+Si esa variable no existe en Coolify, usa por defecto `http://127.0.0.1:8000`.
+
+2) Variables de entorno del frontend en Coolify
+
+No puedo ver directamente tu panel de Coolify desde aquí, pero la variable que debe existir es:
+
+VITE_API_URL=https://URL_PUBLICA_DEL_BACKEND
+
+Ejemplo:
+
+VITE_API_URL=https://a8ql8qykzdfbogurkr36l0wy.151.245.32.225.sslip.io
+
+Si esta variable no está definida, el frontend seguirá intentando conectarse a localhost y dará error.
+
+3) middleware CORS de backend/main.py
+
+Contenido actual:
+
+def _parse_cors_origins() -> list[str]:
+    raw_origins = os.getenv(
+        "CORS_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174"
+    )
+    return [origin.strip() for origin in raw_origins.split(",") if origin.strip()]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_parse_cors_origins(),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+Esto quiere decir que en Coolify el backend debe tener una variable:
+
+CORS_ORIGINS=https://URL_PUBLICA_DEL_FRONTEND
+
+Ejemplo:
+
+CORS_ORIGINS=https://a8ql8qykzdfbogurkr36l0wy.151.245.32.225.sslip.io
+
+4) Resumen de lo que hay que configurar
+
+Frontend:
+- VITE_API_URL = URL pública del backend
+
+Backend:
+- DATABASE_URL = conexión a PostgreSQL de Coolify
+- SECRET_KEY = clave segura
+- CORS_ORIGINS = URL pública del frontend
+- ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_NAME, ADMIN_LASTNAME, ADMIN_PHONE
+- PROJECT_NAME
+- SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM
+- RESET_CODE_EXPIRES_MINUTES
+
+Base de datos:
+- PostgreSQL interna en Coolify
+- La BD local ya fue clonada con el backup `backup_rilamb.dump`

@@ -1,7 +1,4 @@
-import uuid
-
 from sqlalchemy import Column, String, Boolean, TIMESTAMP
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy import Enum
 
@@ -11,10 +8,10 @@ from models.enums import UserRole
 class User(Base):
     __tablename__ = "usuarios"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    cedula = Column(String(20), primary_key=True, nullable=False)
 
     nombre = Column(String(100), nullable=False)
-    apellidos = Column(String(100), nullable=False)
+    apellido = Column(String(100), nullable=False)
     telefono = Column(String(20))
 
     correo = Column(String, unique=True, nullable=False)

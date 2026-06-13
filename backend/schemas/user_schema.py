@@ -1,10 +1,10 @@
 from pydantic import BaseModel, EmailStr
-from uuid import UUID
 from datetime import datetime
 
 class UserCreate(BaseModel):
-    nombres: str
-    apellidos: str
+    cedula: str
+    nombre: str
+    apellido: str
     telefono: str
     correo: EmailStr
     password: str
@@ -13,10 +13,16 @@ class UserLogin(BaseModel):
     correo: EmailStr
     password: str
 
-class UserResponse(BaseModel):
-    id: UUID
+class UserUpdate(BaseModel):
     nombre: str
-    apellidos: str
+    apellido: str
+    telefono: str
+    correo: EmailStr
+
+class UserResponse(BaseModel):
+    cedula: str
+    nombre: str
+    apellido: str
     telefono: str
     correo: EmailStr
     rol: str

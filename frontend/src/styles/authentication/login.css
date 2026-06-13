@@ -305,6 +305,14 @@ body {
     0 1px 4px rgba(0, 8, 44, 0.06);
 }
 
+/* Ocultar controles nativos de visor de contraseña */
+.login-input[type="password"]::-ms-reveal,
+.login-input[type="password"]::-ms-clear,
+.login-input[type="password"]::-webkit-credentials-auto-fill-button,
+.login-input[type="password"]::-webkit-textfield-decoration-container {
+  display: none !important;
+}
+
 /* ======================================================
    Botón de visibilidad de contraseña
 ====================================================== */

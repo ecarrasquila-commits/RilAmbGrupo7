@@ -4,13 +4,18 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Estilos
-import "../styles/recoverPassword.css";
+import "../../styles/authentication/recoverPassword.css";
 
 // Componentes
-import BgPattern from "../components/auth/bgPattern";
-import ProgressDots from "../components/auth/progressDots";
-import PasswordField from "../components/auth/PasswordField";
-import AuthLogo from "../components/auth/AuthLogo";
+import BgPattern from "../../components/authentication/bgPattern";
+import ProgressDots from "../../components/authentication/progressDots";
+import PasswordField from "../../components/authentication/PasswordField";
+import AuthLogo from "../../components/authentication/AuthLogo";
+import {
+  forgotPassword,
+  verifyResetCode,
+  resetPassword,
+} from "../../services/authService";
 
 
 // ======================================================
@@ -24,6 +29,7 @@ function getStrength(pwd) {
   if (/[^A-Za-z0-9]/.test(pwd)) score++;
   return score;
 }
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const STRENGTH_LABELS  = ['', 'Débil', 'Regular', 'Buena', 'Fuerte'];
 const STRENGTH_CLASSES = ['', 's1', 's2', 's3', 's4'];
 
@@ -151,7 +157,7 @@ export default function RecoverPassword() {
     setOtp(['', '', '', '', '', '']);
     setOtpErrors([false, false, false, false, false, false]);
     setOtpErrMsg(false); setCodeAlert({ show: false, msg: '' }); setResendAlert(false);
-    setResendCountdown(0); setExpireText('60s'); setExpireExpired(false);
+    setResendCountdown(0); setExpireText('600s'); setExpireExpired(false);
     setResendDisabled(true); setVerifyDisabled(false);
     setPwd1('');
     setPwd2('');
@@ -164,7 +170,7 @@ export default function RecoverPassword() {
   // ------------------------------
   // Pantalla 1 - Enviar código
   // ------------------------------
-  const handleSendCode = () => {
+  const handleSendCode = async () => {
     const trimmed = email.trim();
     const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
     setEmailAlert({ show: false, msg: '' });
@@ -172,18 +178,18 @@ export default function RecoverPassword() {
     if (!ok) return;
 
     setLoadingSend(true);
-    setTimeout(() => {
-      setLoadingSend(false);
-      if (trimmed === 'error@test.com') {
-        setEmailAlert({ show: true, msg: 'No encontramos una cuenta con ese correo.' });
-        setEmailError(true);
-        return;
-      }
+    try {
+      await forgotPassword(trimmed);
       setUserEmail(trimmed);
       setScreen('confirm');
-      startResendCountdown(60);
+      startResendCountdown(600);
       setTimeout(() => otpRefs.current[0]?.focus(), 350);
-    }, 1800);
+    } catch (error) {
+      setEmailAlert({ show: true, msg: error.message || 'No encontramos una cuenta con ese correo.' });
+      setEmailError(true);
+    } finally {
+      setLoadingSend(false);
+    }
   };
 
   // ------------------------------
@@ -227,36 +233,49 @@ export default function RecoverPassword() {
     clearOtpErrors();
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     const code = otp.join('');
     if (code.length < 6) {
       setOtpErrors(otp.map(v => !v));
       setOtpErrMsg(true);
       return;
     }
+
     setLoadingVerify(true);
-    setTimeout(() => {
-      setLoadingVerify(false);
-      if (code === '000000') {
-        setCodeAlert({ show: true, msg: 'Código incorrecto. Inténtalo de nuevo.' });
-        setOtpErrors([true, true, true, true, true, true]);
-        setOtp(['', '', '', '', '', '']);
-        otpRefs.current[0]?.focus();
-        return;
-      }
+    try {
+      await verifyResetCode({ correo: userEmail, code });
       clearInterval(resendIntervalRef.current);
       setScreen('newpwd');
-    }, 1800);
+    } catch (error) {
+      setCodeAlert({ show: true, msg: error.message || 'Código incorrecto. Inténtalo de nuevo.' });
+      setOtpErrors([true, true, true, true, true, true]);
+      setOtp(['', '', '', '', '', '']);
+      otpRefs.current[0]?.focus();
+    } finally {
+      setLoadingVerify(false);
+    }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
+    if (!userEmail) {
+      return;
+    }
+
     setOtp(['', '', '', '', '', '']);
     clearOtpErrors();
-    setVerifyDisabled(false);
-    setResendAlert(true);
-    setTimeout(() => setResendAlert(false), 4000);
-    startResendCountdown(60);
-    setTimeout(() => otpRefs.current[0]?.focus(), 100);
+    setVerifyDisabled(true);
+    setResendAlert(false);
+
+    try {
+      await forgotPassword(userEmail);
+      setResendAlert(true);
+      setTimeout(() => setResendAlert(false), 4000);
+      startResendCountdown(600);
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
+    } catch (error) {
+      setCodeAlert({ show: true, msg: error.message || 'No se pudo reenviar el código.' });
+      setVerifyDisabled(false);
+    }
   };
 
   // ------------------------------
@@ -289,25 +308,32 @@ export default function RecoverPassword() {
     setPwd2Error(pwd1 !== val);
   };
 
-  const handleSavePwd = () => {
+  const handleSavePwd = async () => {
     setPwdAlert({ show: false, msg: '' });
     let valid = true;
     if (pwd1.length < 8) { setPwd1Error(true); valid = false; }
-    if (pwd1 !== pwd2)   { setPwd2Error(true); valid = false; }
+    if (!allReqsMet)      { setPwd1Error(true); valid = false; }
+    if (!pwd2)            { setPwd2Error(true); valid = false; }
+    if (pwd1 !== pwd2)    { setPwd2Error(true); valid = false; }
     if (!valid) return;
 
     setLoadingSave(true);
-    setTimeout(() => {
-      setLoadingSave(false);
-      if (pwd1 === 'Password1!') {
-        setPwdAlert({ show: true, msg: 'Esta contraseña fue usada recientemente. Elige una diferente.' });
-        return;
-      }
+    try {
+      await resetPassword({ correo: userEmail, code: otp.join(''), new_password: pwd1 });
       setScreen('success');
-    }, 2000);
+    } catch (error) {
+      setPwdAlert({ show: true, msg: error.message || 'No se pudo restablecer la contraseña.' });
+    } finally {
+      setLoadingSave(false);
+    }
   };
 
   const allReqsMet = reqsMet.len && reqsMet.upper && reqsMet.num && reqsMet.special;
+  const emailOk = email.trim().length > 0 && emailRegex.test(email.trim());
+  const otpValue = otp.join('');
+  const isSendCodeEnabled = !loadingSend && emailOk;
+  const isVerifyEnabled = otpValue.length === 6 && !loadingVerify && !verifyDisabled;
+  const isSavePasswordEnabled = !loadingSave && pwd1.length > 0 && pwd2.length > 0 && allReqsMet && pwd1 === pwd2;
 
   // ======================================================
   // Renderizado
@@ -357,9 +383,10 @@ export default function RecoverPassword() {
             {/* Campo de correo electrónico */}
             <div className="rp-fields">
               <div className="rp-field">
-                <label>Correo electrónico</label>
+                <label htmlFor="recover-email">Correo electrónico</label>
                 <div className="rp-input-wrap">
                   <input
+                    id="recover-email"
                     className={`rp-input${emailError ? ' error' : ''}`}
                     type="email"
                     placeholder="tu@empresa.com"
@@ -384,7 +411,7 @@ export default function RecoverPassword() {
             <button
               className={`rp-btn-main${loadingSend ? ' loading' : ''}`}
               onClick={handleSendCode}
-              disabled={loadingSend}
+              disabled={!isSendCodeEnabled}
             >
               <span className="rp-spinner" />
               <span className="rp-btn-label">Enviar código de verificación</span>
@@ -476,7 +503,7 @@ export default function RecoverPassword() {
             <button
               className={`rp-btn-main${loadingVerify ? ' loading' : ''}`}
               onClick={handleVerify}
-              disabled={loadingVerify || verifyDisabled}
+              disabled={!isVerifyEnabled}
             >
               <span className="rp-spinner" />
               <span className="rp-btn-label">Verificar código</span>
@@ -530,8 +557,9 @@ export default function RecoverPassword() {
             <div className="rp-fields">
               {/* Campo de nueva contraseña */}
               <div className="rp-field">
-                <label>Nueva contraseña</label>
+                <label htmlFor="recover-new-password">Nueva contraseña</label>
                 <PasswordField
+                  id="recover-new-password"
                   className={`rp-input rp-input--has-icon${pwd1Error ? ' error' : ''}`}
                   wrapperClassName="rp-input-wrap"
                   buttonClassName="rp-eye-btn"
@@ -594,8 +622,9 @@ export default function RecoverPassword() {
 
               {/* Campo de confirmar contraseña */}
               <div className="rp-field">
-                <label>Confirmar contraseña</label>
+                <label htmlFor="recover-confirm-password">Confirmar contraseña</label>
                 <PasswordField
+                  id="recover-confirm-password"
                   className={`rp-input rp-input--has-icon${
                     pwd2Error ? ' error' : pwd2.length > 0 && pwd1 === pwd2 ? ' valid' : ''
                   }`}
@@ -615,7 +644,7 @@ export default function RecoverPassword() {
             <button
               className={`rp-btn-main${loadingSave ? ' loading' : ''}`}
               onClick={handleSavePwd}
-              disabled={loadingSave}
+              disabled={!isSavePasswordEnabled}
             >
               <span className="rp-spinner" />
               <span className="rp-btn-label">Guardar nueva contraseña</span>

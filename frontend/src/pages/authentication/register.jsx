@@ -1,14 +1,18 @@
 // frontend/src/pages/register.jsx
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { registerUser } from "../services/authService";
-import "../styles/register.css";
-import BgPattern from "../components/auth/bgPattern";
-import PasswordField from "../components/auth/PasswordField";
+import { Link, useNavigate } from "react-router-dom";
+import { registerUser } from "../../services/authService";
+import "../../styles/authentication/register.css";
+import BgPattern from "../../components/authentication/bgPattern";
+import AuthLogo from "../../components/authentication/AuthLogo";
+import PasswordField from "../../components/authentication/PasswordField";
 
 const STRENGTH_LABELS  = ['', 'Débil', 'Regular', 'Buena', 'Fuerte'];
 const STRENGTH_CLASSES = ['', 's1', 's2', 's3', 's4'];
+const nameRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+const digitsOnly = /^\d+$/;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function getStrength(pwd) {
   let score = 0;
@@ -28,6 +32,7 @@ function CheckIcon() {
 }
 
 export default function RilAmbRegister() {
+  const navigate = useNavigate();
   const [fields, setFields] = useState({
     nombres: '', apellidos: '', cedula: '', telefono: '', correo: '', pwd1: '', pwd2: ''
   });
@@ -59,14 +64,21 @@ export default function RilAmbRegister() {
 
   async function handleRegister() {
     const { nombres, apellidos, cedula, telefono, correo, pwd1, pwd2 } = fields;
-    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
+    const trimmed = {
+      nombres: nombres.trim(),
+      apellidos: apellidos.trim(),
+      cedula: cedula.trim(),
+      telefono: telefono.trim(),
+      correo: correo.trim(),
+    };
+    const emailOk = emailRegex.test(trimmed.correo);
     const newErrors = {
-      nombres:   nombres.trim().length < 2,
-      apellidos: apellidos.trim().length < 2,
-      cedula:    cedula.trim().length < 5,
-      telefono:  telefono.trim().length < 7,
+      nombres:   trimmed.nombres.length < 2 || !nameRegex.test(trimmed.nombres),
+      apellidos: trimmed.apellidos.length < 2 || !nameRegex.test(trimmed.apellidos),
+      cedula:    !digitsOnly.test(trimmed.cedula) || trimmed.cedula.length < 5,
+      telefono:  !digitsOnly.test(trimmed.telefono) || trimmed.telefono.length < 7,
       correo:    !emailOk,
-      pwd1:      pwd1.length < 8,
+      pwd1:      !allMet,
       pwd2:      pwd1 !== pwd2,
     };
     setErrors(newErrors);
@@ -77,21 +89,31 @@ export default function RilAmbRegister() {
 
     try {
       await registerUser({
-        nombres,
-        apellidos,
+        cedula,
+        nombre: nombres,
+        apellido: apellidos,
         telefono,
         correo,
         password: pwd1,
       });
 
-      alert("Registro exitoso");
-      window.location.href = "/";
+      navigate("/login");
     } catch (error) {
       alert(error.message);
     }
   }
 
   const sc = STRENGTH_CLASSES[strength];
+  const allFieldsFilled = Object.values(fields).every((value) => value.trim().length > 0);
+  const isRegisterEnabled =
+    allFieldsFilled &&
+    nameRegex.test(fields.nombres.trim()) &&
+    nameRegex.test(fields.apellidos.trim()) &&
+    digitsOnly.test(fields.cedula.trim()) &&
+    digitsOnly.test(fields.telefono.trim()) &&
+    emailRegex.test(fields.correo.trim()) &&
+    allMet &&
+    fields.pwd1 === fields.pwd2;
 
   return (
     <>
@@ -103,12 +125,11 @@ export default function RilAmbRegister() {
         <BgPattern/>
 
         <div className="card">
-          <div className="logo">
-            <div className="logo-mark">
-              <img src="en blanco LOGO cortado.png" alt=""/>
-            </div>
-            <span className="logo-name">RilAmb</span>
-          </div>
+          <AuthLogo
+            containerClassName="logo"
+            markClassName="logo-mark"
+            textClassName="logo-name"
+          />
 
           <div className="header">
             <h1>Crear cuenta</h1>
@@ -159,7 +180,7 @@ export default function RilAmbRegister() {
                 <div className="input-wrap">
                   <input
                     type="tel" id="telefono" className={`no-icon${errors.telefono ? ' error' : ''}`}
-                    placeholder="+57 300 000 0000" autoComplete="tel" inputMode="tel"
+                    placeholder="3001234567" autoComplete="tel" inputMode="tel"
                     value={fields.telefono} onChange={handleChange}
                   />
                 </div>
@@ -235,10 +256,10 @@ export default function RilAmbRegister() {
 
           </div>
 
-          <button className="btn-main" onClick={handleRegister}>Crear cuenta</button>
+          <button className="btn-main" onClick={handleRegister} disabled={!isRegisterEnabled}>Crear cuenta</button>
 
           <div className="footer">
-            ¿Ya tienes cuenta? <Link to="/">Iniciar sesión</Link>
+            ¿Ya tienes cuenta? <Link to="/login">Iniciar sesión</Link>
           </div>
         </div>
       </div>

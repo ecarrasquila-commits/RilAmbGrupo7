@@ -1,0 +1,133 @@
+PROYECTO RILAMB - RESUMEN PARA DESPLIEGUE EN COOLIFY
+
+1) ESTRUCTURA DEL PROYECTO
+
+RilAmbGrupo7/
+├── backend/
+│   ├── database/
+│   ├── middleware/
+│   ├── models/
+│   ├── routes/
+│   ├── schemas/
+│   ├── services/
+│   ├── tests/
+│   ├── utils/
+│   ├── main.py
+│   ├── requirements.txt
+│   ├── runtime.txt
+│   └── .env.example
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── constants/
+│   │   ├── hooks/
+│   │   ├── pages/
+│   │   ├── router/
+│   │   ├── services/
+│   │   └── styles/
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── .nvmrc
+│   └── .env.example
+├── backup_rilamb.dump
+├── COOLIFY_DEPLOYMENT.md
+└── README.md
+
+No se encontraron Dockerfile ni docker-compose.yml en el repositorio.
+
+2) BACKEND
+
+El backend usa FastAPI.
+
+Archivo principal:
+- backend/main.py
+
+Dependencias:
+- backend/requirements.txt
+
+Punto de arranque:
+- app = FastAPI()
+
+Variables de entorno usadas por el backend:
+- DATABASE_URL
+- SECRET_KEY
+- CORS_ORIGINS
+- ADMIN_EMAIL
+- ADMIN_PASSWORD
+- ADMIN_NAME
+- ADMIN_LASTNAME
+- ADMIN_PHONE
+- PROJECT_NAME
+- SMTP_HOST
+- SMTP_PORT
+- SMTP_USER
+- SMTP_PASSWORD
+- SMTP_FROM
+- RESET_CODE_EXPIRES_MINUTES
+
+Ejemplo de base de datos local actual:
+- DATABASE_URL=postgresql://postgres:****@localhost:5432/appdb
+
+3) FRONTEND
+
+El frontend usa Vite + React.
+
+Archivo principal de configuración:
+- frontend/package.json
+
+Archivo donde se centraliza la URL del backend:
+- frontend/src/services/apiBase.js
+
+Cómo consume el backend:
+- Usa VITE_API_URL desde variables de entorno.
+- Si no existe, cae en fallback local a http://127.0.0.1:8000.
+
+Variable de entorno requerida:
+- VITE_API_URL
+
+4) BASE DE DATOS
+
+Base de datos usada:
+- PostgreSQL
+
+La BD local fue clonada con un backup:
+- backup_rilamb.dump
+
+La importación en Coolify ya fue realizada con éxito.
+
+5) CONFIGURACIÓN EN COOLIFY
+
+Backend:
+- Runtime: Python 3.11.9
+- Start command: uvicorn main:app --host 0.0.0.0 --port 8000
+- Variables: DATABASE_URL, SECRET_KEY, CORS_ORIGINS y las variables SMTP/ADMIN
+
+Frontend:
+- Runtime: Node 20.19.0 o superior
+- Build command: npm run build
+- Output directory: dist
+- Variable: VITE_API_URL apuntando al backend público
+
+Base de datos:
+- PostgreSQL interna de Coolify
+- Puerto: 5432
+- Nombre de base: postgres
+
+6) ACCESO PÚBLICO RECOMENDADO
+
+Propuesta recomendada:
+- https://tu-frontend-dominio.com        -> React
+- https://tu-backend-dominio.com         -> FastAPI
+
+Alternativa:
+- https://tu-dominio.com                 -> React
+- https://tu-dominio.com/api             -> FastAPI
+
+7) ORDEN DE DESPLIEGUE
+
+1. Restaurar la base de datos en Coolify.
+2. Configurar y redeploy del backend.
+3. Configurar y redeploy del frontend.
+4. Verificar login, dispositivos, notificaciones y reportes.

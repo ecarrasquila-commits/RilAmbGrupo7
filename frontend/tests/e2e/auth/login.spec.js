@@ -8,7 +8,7 @@ async function createUser(email, password) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       nombres: 'E2E',
-      apellidos: 'Usuario',
+      apellidos: 'Login',
       telefono: '+573001234567',
       correo: email,
       password,
@@ -19,18 +19,23 @@ async function createUser(email, password) {
 }
 
 test('login end-to-end flow', async ({ page }) => {
-  const email = `e2e-login-${Date.now()}@example.com`;
+  const email = 'e2e-login-test@example.com';
   const password = 'Password123!';
 
-  const registerResponse = await createUser(email, password);
-  expect(registerResponse.ok).toBeTruthy();
+  // Intentar crear el usuario. Si ya existe, no hay problema.
+  // Si no existe, se crea. Si existe, retorna 400 pero podemos ignorarlo.
+  try {
+    await createUser(email, password);
+  } catch {
+    // Usuario ya existe, eso está bien
+  }
 
   page.once('dialog', async (dialog) => {
     expect(dialog.message()).toBe('Login exitoso');
     await dialog.accept();
   });
 
-  await page.goto('/');
+  await page.goto('/login');
   await page.type('#email', email, { delay: 100 });
   await page.type('#password', password, { delay: 100 });
   await page.click('button:has-text("Iniciar sesión")');

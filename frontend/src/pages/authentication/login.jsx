@@ -1,20 +1,21 @@
 // frontend/src/pages/login.jsx
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { loginUser } from "../services/authService";
+import { Link, useNavigate } from "react-router-dom";
+import { loginUser } from "../../services/authService";
 
 // Estilos
-import "../styles/login.css";
+import "../../styles/authentication/login.css";
 
 // Componentes
-import BgPattern from "../components/auth/bgPattern";
-import AuthLogo from "../components/auth/AuthLogo";
-import PasswordField from "../components/auth/PasswordField";
+import BgPattern from "../../components/authentication/bgPattern";
+import AuthLogo from "../../components/authentication/AuthLogo";
+import PasswordField from "../../components/authentication/PasswordField";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Login() {
+  const navigate = useNavigate();
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({ correo: "", password: "" });
@@ -47,10 +48,10 @@ export default function Login() {
     }
 
     try {
-      await loginUser({ correo, password });
+      const result = await loginUser({ correo, password });
+      const destination = result.rol === "admin" ? "/admin" : "/dashboard";
 
-      alert("Login exitoso");
-      window.location.href = "/dashboard";
+      navigate("/session-logo", { replace: true, state: { next: destination } });
     } catch (error) {
       alert(error.message);
     }

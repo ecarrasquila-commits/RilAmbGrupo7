@@ -52,5 +52,5 @@ o
 - python -m uvicorn main:app --host 127.0.0.1 --port 8000
 
 - cd D:\paginasUniversidad\RilAmbGrupo7\frontend
-- npm run e2e:slow -- tests/e2e/login.spec.js
-- npm run e2e:slow -- tests/e2e/register.spec.js
+- npm run e2e:slow -- tests/e2e/auth/login.spec.js
+- npm run e2e:slow -- tests/e2e/auth/register.spec.js

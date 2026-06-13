@@ -12,8 +12,8 @@ class UserDevice(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
     usuario_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("usuarios.id"),
+        String(20),
+        ForeignKey("usuarios.cedula"),
         nullable=False
     )
 
